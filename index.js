@@ -18,7 +18,7 @@ function maybeEmail(str) {
 
 
 function maybePhone(str) {
-  const re = /(phone:|tel:|mobile:|(^|\s+)cell:|office:|direct:|(^|\s+)o:|fax:|(^|\s+)m:).*?\d{2,}/;
+  const re = /(phone:|tel:|tél:|téléphone:|mobile:|(^|\s+)cell:|portable:|fax:|numéro:|(^|\s+)o:|fax:|(^|\s+)m:).*?\d{2,}/;
   return re.test(String(str).toLowerCase()) || phone.extractPhoneNumbers(str).length > 0;
 }
 
@@ -28,7 +28,7 @@ function isUrl(str) {
 }
 
 function isInternetService(str) {
-  const re = /skype:|skype\s{0,5}id:|\(skype\)|twitter|facebook|linkedin|blog/;
+  const re = /skype:|skype\s{0,5}id:|\(skype\)|twitter|facebook|instagram|linkedin|blog/;
   return re.test(String(str).toLowerCase());
 }
 
@@ -37,8 +37,8 @@ function isEmbeddedImage(str) {
   return re.test(String(str).toLowerCase());
 }
 
-const reSentFromMy = /\s{0,5}sent from my/;
-const reGetOutlook = /\s{0,5}get outlook for/;
+const reSentFromMy = /\s{0,5}Envoyé depuis/;
+const reGetOutlook = /\s{0,5}Sent from/;
 
 function isSentFromMy(str) {
   return reSentFromMy.test(String(str).toLowerCase());
@@ -153,7 +153,7 @@ function maybeStartSig(line, arrSenderTok, idxLine) {
   if (idxLine > 0) {
     //Thanks,
     if (!startSig) {
-      const re = /thank.{1,30}regards|thank {0,3}you|thanx|thanks|many {0,3}thanks|regard|sincerely|all {0,3}the {0,3}best|best|with {0,3}appreciation|with {0,3}gratitude|yours {0,3}truly|cheers|faithfully|^[\s]*---*[\s]*.?$|^[\s]*___*[\s]*.?$/;
+      const re = /thank.{1,30}regards|thank {0,3}you|thanx|merci|Bien cordialement|Cordialement|En vous remerci|Dans l'attente de|Bien à |Mes salutations|Bonne journée|Excellent|thanks|many {0,3}thanks|regard|sincerely|all {0,3}the {0,3}best|best|with {0,3}appreciation|with {0,3}gratitude|yours {0,3}truly|cheers|faithfully|^[\s]*---*[\s]*.?$|^[\s]*___*[\s]*.?$/;
       m = normline.match(re);
       if (m && m.length > 0) {
         if (m.index <= distFromStartLine && normline.length - (m.index + m[0].length) < distFromEndLine) {

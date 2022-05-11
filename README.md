@@ -6,10 +6,10 @@ Extracts signatures from emails.
 
 ### Node 
 
-Install: npm install email-signature-detector
+Install: npm install email-signature-detector-fr
 
 ```js
-const signature = require('email-signature-detector');
+const signature = require('email-signature-detector-fr');
 
 const body = `Dave,
 

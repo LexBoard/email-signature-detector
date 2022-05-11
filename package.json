@@ -1,7 +1,7 @@
 {
-  "name": "@harmon.ie/email-signature-detector",
-  "version": "0.0.6",
-  "description": "Detects and extracts email signatures ",
+  "name": "email-signature-detector-fr",
+  "version": "0.0.2",
+  "description": "Detects and extracts email signatures - for en-EN and fr-FR languages",
   "main": "index.js",
   "scripts": {
     "test": "jest --watch",
@@ -9,15 +9,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/harmoniedev/email-signature-detector"
+    "url": "https://github.com/LexBoard/email-signature-detector"
   },
   "keywords": [
     "email",
     "nlp",
     "signature",
-    "tex-mining"
+    "tex-mining",
+    "fr"
   ],
-  "author": "Dekel Cohen",
+  "author": "Joseph Bedminster, with @Fekel Cohen initial repo",
   "license": "ISC",
   "dependencies": {
     "@harmon.ie/email-util": "git+https://github.com/harmoniedev/email-util.git#development",
