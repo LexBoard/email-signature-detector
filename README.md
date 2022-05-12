@@ -1,4 +1,4 @@
-# Email Signature Detector 
+# Email Signature Detector FR & EN
 Extracts signatures from emails.  
 
 

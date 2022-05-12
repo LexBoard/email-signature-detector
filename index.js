@@ -18,7 +18,7 @@ function maybeEmail(str) {
 
 
 function maybePhone(str) {
-  const re = /(phone:|tel:|tél:|téléphone:|mobile:|(^|\s+)cell:|portable:|fax:|numéro:|(^|\s+)o:|fax:|(^|\s+)m:).*?\d{2,}/;
+  const re = /(phone:|tel:|mobile:|(^|\s+)cell:|office:|direct:|(^|\s+)o:|fax:|(^|\s+)m:).*?\d{2,}/;
   return re.test(String(str).toLowerCase()) || phone.extractPhoneNumbers(str).length > 0;
 }
 
@@ -28,7 +28,7 @@ function isUrl(str) {
 }
 
 function isInternetService(str) {
-  const re = /skype:|skype\s{0,5}id:|\(skype\)|twitter|facebook|instagram|linkedin|blog/;
+  const re = /skype:|skype\s{0,5}id:|\(skype\)|twitter|facebook|linkedin|blog/;
   return re.test(String(str).toLowerCase());
 }
 
@@ -37,8 +37,8 @@ function isEmbeddedImage(str) {
   return re.test(String(str).toLowerCase());
 }
 
-const reSentFromMy = /\s{0,5}Envoyé depuis/;
-const reGetOutlook = /\s{0,5}Sent from/;
+const reSentFromMy = /\s{0,5}sent from my/;
+const reGetOutlook = /\s{0,5}get outlook for/;
 
 function isSentFromMy(str) {
   return reSentFromMy.test(String(str).toLowerCase());
@@ -102,7 +102,7 @@ function getSenderScore(line, arrSenderTok, requireCloseStart) {
         maxSenderIdx = idx + tok.length;
       }
       if (line[idx] === line[idx].toLocaleUpperCase() &&       //Uppercase match - in original line string
-        normLine[idx] !== normLine[idx].toLocaleUpperCase()) { //Heb, CHS don't have upper case anyway.
+          normLine[idx] !== normLine[idx].toLocaleUpperCase()) { //Heb, CHS don't have upper case anyway.
         nMatchCapToks += 1;
       }
     } //End if m != null
@@ -205,13 +205,13 @@ function getSignatureScore(idxStartSig, idxEndSig, lines, arrSenderTok, startSig
       } else if (isLongLine(line) && !mayBeUnsubscribe(line)) {
         const longScore = score > 2 ? SCORE_LONG_LINE_LOW : SCORE_LONG_LINE_HIGH;
         lni += (`>> long ${longScore} line=${line}\n`);
-        //If long line and didn't find any sig-hint (url, phone, list ...) --> may be a false sig start that include many text line below it --> penalize score 
+        //If long line and didn't find any sig-hint (url, phone, list ...) --> may be a false sig start that include many text line below it --> penalize score
         //Long-lines should penalize more if not enough evidence (score) is accumulated from idxStartSig until current long line
         //Ex: Thanks at the beginning --> short email (2-3 long lines) --> long signature (many good sig lines) without a  maybeStartSig --> may cut entire email !!!
         //If, on the other hand, there are several anti-virus/ecological/legal/marketing advertisment long lines AFTER or in a MIDDLE of a good signature (score is higher) --> penalize less
         score += longScore;
       }
-    } //End iterLines loop         
+    } //End iterLines loop
   }
   return { score, dbg: { lni } };
 }
@@ -220,8 +220,8 @@ function tryExtractSig({ score, dbg, idxStartSig, props }, lines, { bodyNoSig },
   let idxStartFinalSig = -1;
   //* Require > 4 or 30% lines, after the startSig, looks like one of the above signature clues.
   if (score >= 4 ||
-    (score / (lines.length - idxStartSig) >= 0.3) ||
-    (props.lastLineSig && (lines.length - idxStartSig) === 1)) {
+      (score / (lines.length - idxStartSig) >= 0.3) ||
+      (props.lastLineSig && (lines.length - idxStartSig) === 1)) {
     //* Limit to delete only 16 lines from the end of the email (not after the startSig)
     idxStartFinalSig = Math.max(lines.length - MAX_SIG_NUM_LINES, idxStartSig);
     ret.signature = lines.slice(idxStartFinalSig).join('\r\n');
@@ -230,7 +230,7 @@ function tryExtractSig({ score, dbg, idxStartSig, props }, lines, { bodyNoSig },
     if (bodyNoSig) {
       ret.bodyNoSig = lines.slice(0, idxStartFinalSig).join('\r\n');
     }
-  } 
+  }
   ret.dbg = { ...ret.dbg, ...dbg };
 }
 
@@ -247,9 +247,9 @@ function getSignature(body, from, bodyNoSig) {
   const { arrNameTok } = per.parseMailTokens(from);
   const linesWithSeparator = body.split(/([.\s]*[\r\n]+[.\s]*)/); // lines with only whitespace and dots are considered empty lines
   const lines = _.filter(linesWithSeparator,
-    (x, i, arr) =>
-      i % 2 === 0
-      && !(i === arr.length - 1 && x === "") // if the last element is empty, remove it
+      (x, i, arr) =>
+          i % 2 === 0
+          && !(i === arr.length - 1 && x === "") // if the last element is empty, remove it
   );
 
   if (!lines) { return ret; }
@@ -289,6 +289,19 @@ function getSignature(body, from, bodyNoSig) {
     ret.characterOffsetBegin = bodyWithoutSigLen;
     ret.characterOffsetEnd = body.length;
     ret.signature = body.slice(bodyWithoutSigLen);
+  } else {
+    //@FR condition if text is very short (business habits)
+    if (body.length < 125) {
+      const re = /thank.{1,30}regards|thank {0,3}you|thanx|merci|Bien cordialement|Cordialement|En vous remerci|stp|svp|s'il te p|s'il vous p|Dans l'attente de|Bien à |Mes salutations|Bonne journée|Excellent|thanks|many {0,3}thanks|regard|sincerely|all {0,3}the {0,3}best|best|with {0,3}appreciation|with {0,3}gratitude|yours {0,3}truly|cheers|faithfully|^[\s]*---*[\s]*.?$|^[\s]*___*[\s]*.?$/;
+      m = body.match(re);
+      if (m && m.length > 0) {
+        ret.found = true;
+        ret.characterOffsetBegin = m.index;
+        ret.characterOffsetEnd = body.length;
+        ret.signature = body.slice(m.index, body.length);
+        ret.bodyNoSig = body.slice(0, m.index);
+      }
+    }
   }
   return ret;
 
