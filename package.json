@@ -1,6 +1,6 @@
 {
   "name": "email-signature-detector-fr",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Detects and extracts email signatures - for en-EN and fr-FR languages",
   "main": "index.js",
   "scripts": {
